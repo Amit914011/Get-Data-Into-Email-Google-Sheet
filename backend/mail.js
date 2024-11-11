@@ -11,7 +11,7 @@ app.use(cors());
 
 // Route to send OTP via email
 app.post('/send-sms', async (req, res) => {
-  const { email, name,number } = req.body;
+  const { email, name,number,from,to,departureDate,adults,children,travelClass, } = req.body;
 
   // Create a transporter for NodeMailer using your email credentials
   let transporter = nodemailer.createTransport({
@@ -26,7 +26,7 @@ app.post('/send-sms', async (req, res) => {
     from: 'amit@techxpert.in', // Sender email
     to: email, // Receiver's email (from frontend)
     subject: 'Your Confirmation Email',
-    text: `Hello ${name} Number ${number}`, // Email content
+    text: `Hello ${name} Number ${number} ${number} ${number} ${number} ${number} ${number} ${number} ${number}  `, // Email content
   };
 
   try {

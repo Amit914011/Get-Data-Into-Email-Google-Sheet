@@ -17,6 +17,7 @@ const LeadGene = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [activeButton, setActiveButton] = useState(''); // Track which button is clicked
 
   const handleChange = (e) => {
     setFormData({
@@ -39,7 +40,7 @@ const LeadGene = () => {
     return formErrors;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, type) => {
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
@@ -51,8 +52,10 @@ const LeadGene = () => {
       try {
         const formDataToSubmit = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
-          formDataToSubmit.append(key, value);
+          formDataToSubmit.append(key, value); 
         });
+        
+        formDataToSubmit.append('type', type);
 
         const scriptUrl = 'https://script.google.com/macros/s/AKfycby3Mv8NHAgFH1cLuuJQ2Xm-pBAH_hg3nvIB1Apxd7kwRT7shdl1_5hF1gBPQtaBrmZ5Lw/exec';
         
@@ -67,10 +70,10 @@ const LeadGene = () => {
           await fetch('http://localhost:5000/send-sms', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: formData.email, name: formData.name, number:formData.number }),
+            body: JSON.stringify({ email: formData.email, name: formData.name, number: formData.number, from:formData.from,to:formData.to,departureDate:formData.departureDate,adults:formData.adults,children:formData.children,travelClass:formData.travelClass,type:formData.type }),
           });
           
-          setSuccessMessage('Your data has been submited');
+          setSuccessMessage('Your data has been submitted successfully.');
         } else {
           throw new Error('Please enter both a valid email address and name.');
         }
@@ -97,8 +100,23 @@ const LeadGene = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 py-6 w-full max-w-xl">
+    <div className="flex flex-col justify-center items-center min-h-screen bg-gray-100 p-4">
+      <div>
+        <button
+          className={`mr-4 p-2 ${activeButton === 'B2C' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveButton('B2C')}
+        >
+          B2C
+        </button>
+        <button
+          className={`p-2 ${activeButton === 'B2B' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          onClick={() => setActiveButton('B2B')}
+        >
+          B2B
+        </button>
+      </div>
+
+      <form className="bg-white shadow-md rounded px-8 py-6 w-full max-w-xl">
         <h2 className="text-2xl font-bold mb-4">Enquiry Form</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Name */}
@@ -213,10 +231,10 @@ const LeadGene = () => {
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select Class</option>
-              <option value="General">General Class</option>
-              <option value="Economy">Economy Class</option>
-              <option value="Business">Business Class</option>
+              <option value="">Select class</option>
+              <option value="Economy">Economy</option>
+              <option value="Business">Business</option>
+              <option value="First">First</option>
             </select>
             {errors.travelClass && <p className="text-red-500 text-sm">{errors.travelClass}</p>}
           </div>
@@ -225,17 +243,17 @@ const LeadGene = () => {
         {/* Submit Button */}
         <div className="mt-6">
           <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
+            className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
+            onClick={(e) => handleSubmit(e, activeButton)}
             disabled={loading}
           >
             {loading ? 'Submitting...' : 'Submit'}
           </button>
         </div>
 
-        {/* Success and Error Messages */}
-        {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
-        {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+        {/* Success/Error Message */}
+        {successMessage && <p className="text-green-500 text-sm mt-4">{successMessage}</p>}
+        {errorMessage && <p className="text-red-500 text-sm mt-4">{errorMessage}</p>}
       </form>
     </div>
   );
